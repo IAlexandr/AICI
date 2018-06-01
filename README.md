@@ -1,29 +1,14 @@
-## deql-ms
+## SIMPLE DEPLOY
 
-The template-service (ms) includes a set for the [server](https://github.com/IAlexandr/deql-ms-server) and [client](https://github.com/IAlexandr/deql-ms-client).
+### TODO
 
-You can use both the server and client parts separately.
+* [ ] pulling changes of git repo (api.github v4)
+* [ ] send current status to slack (branch was updated, results of test, deploy)
+* [ ] testing app
+* [ ] deploy app
+* [ ] manual start of testing/deploy
 
-The ms are tools:
-
-### v.1
-
-* [x] Apollo Server
-* [x] Apollo Engine
-* [x] Graphql Playground
-* [x] Graphql Voyager
-* [x] Express-session (sequelize)
-* [ ] Schema stitching
-* [ ] Apollo Client
-
-### v.2
-
-* [ ] Express-session (connect-redis)
-* [ ] Prisma GraphQL API (Database Connector: Postgres)
-
-You can add other tools to repository [deql-ms-server](https://github.com/IAlexandr/deql-ms-server)
-
-* [x] VSCode server debugging (launch.json)
+## based on [deql-ms](https://github.com/IAlexandr/deql-ms)
 
 ### Initializing submodules:
 
