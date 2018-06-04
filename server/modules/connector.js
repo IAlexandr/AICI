@@ -5,4 +5,4 @@ export { default as logger } from 'tools/logger/config';
 export { default as redis } from 'tools/redis/config';
 
 // export { default as sessionInfo } from './sessionInfo';
-export { default as repositories } from './repositories';
+export { default as githubPuller } from './github-puller';
