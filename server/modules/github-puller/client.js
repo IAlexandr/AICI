@@ -2,6 +2,8 @@ import { GraphQLClient } from 'graphql-request';
 import options from 'tools/options';
 import schedule from 'node-schedule';
 import logger from 'tools/logger';
+import path from 'path';
+import { series } from './exec';
 
 const { debug, time } = logger('project.modules.github-puller');
 
@@ -37,22 +39,55 @@ export const repoWatch = repository => {
     debug('[repoWatch] ', repository.name, 'already has schedule.');
     return;
   }
-  schedules[repository.name] = schedule.scheduleJob('*/1 * * * *', function(
+  actualize(repository).catch(err => {
+    debug('err', err.message);
+  });
+  schedules[repository.name] = schedule.scheduleJob('*/5 * * * *', function(
     fireDate
   ) {
-    actualize(repository);
+    actualize(repository).catch(err => {
+      debug('err', err.message);
+    });
   });
 
   debug('[repoWatch] schedule created for:', repository.name);
 };
 
-export const actualize = repository =>
-  IsRepoChanged(repository).then(({ changed }) => {
-    if (changed) {
-      // TODO git pull from repo folder
-      debug(`repository ${repository.name} was changed!`);
-    }
-  });
+export const actualize = async repository => {
+  const { changed } = await IsRepoChanged(repository);
+  if (changed) {
+    debug(`repository ${repository.name} was changed!`);
+    const repFolderPath = path.resolve(
+      process.cwd(),
+      `../${repository.name}`
+    );
+    debug('repFolderPath', repFolderPath);
+    series(['git status'], { cwd: repFolderPath }, (err, stdout, stderr) => {
+      if (err) {
+        debug(repository.name, 'err', err);
+        debug(repository.name, 'stderr', stderr);
+        throw err;
+      }
+      debug(repository.name, 'stdout', stdout);
+      const branchRe = new RegExp(`origin\/${repository.branch}`, 'g');
+      const nothingRe = new RegExp(
+        'nothing to commit, working tree clean',
+        'g'
+      );
+      if (!stdout.match(branchRe)) {
+        debug(repository.name, 'match branchRe', stdout.match(branchRe));
+        debug(`local branch is not '${repository.branch}'`);
+        // TODO change status
+      } else {
+        debug(repository.name, 'match nothingRe', stdout.match(nothingRe));
+        const isUpToDate = !!(
+          stdout.match(branchRe) && stdout.match(nothingRe)
+        );
+        debug('isUpToDate', isUpToDate);
+      }
+    });
+  }
+};
 
 export const connectedBy = () => {
   const query = `{
