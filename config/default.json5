@@ -29,5 +29,6 @@
   },
   buildType: "prod", // dev, prod
   NODE_ENV: "development", // development, production
-  promMonitoringHash: "001dc9bdb52d04dc20036dbd8313ed"
+  promMonitoringHash: "001dc9bdb52d04dc20036dbd8313ed",
+  githubApiToken: ''
 }
