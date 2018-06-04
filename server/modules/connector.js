@@ -4,4 +4,5 @@ export { default as logger } from 'tools/logger/config';
 // } from 'tools/express-session-sequelize/config';
 export { default as redis } from 'tools/redis/config';
 
-export { default as sessionInfo } from './sessionInfo';
+// export { default as sessionInfo } from './sessionInfo';
+export { default as repositories } from './repositories';
