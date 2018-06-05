@@ -11,6 +11,7 @@ const { debug, time } = logger('project.modules.github-puller');
 
 let client;
 const schedules = {};
+const LOCAL_REBUILD = true;
 
 export const init = async db => {
   debug('init');
@@ -79,6 +80,26 @@ const changeState = (repository, state) =>
     );
   });
 
+const updateRepoDocLastCommit = (repository, lastCommit) =>
+  new Promise((resolve, reject) => {
+    debug(`repostiroy "${repository.name}" changing lastCommit`);
+    db.Repository.update(
+      { _id: repository._id },
+      {
+        $set: {
+          lastCommit,
+        },
+      },
+      err => {
+        if (err) {
+          debug('updateRepoDocLastCommit err', err);
+          return reject(err);
+        }
+        return resolve();
+      }
+    );
+  });
+
 const createOperation = operation => {
   db.Operation.insert(operation, err => {
     if (err) {
@@ -110,14 +131,19 @@ const isBusy = repository =>
 
 export const actualize = async ({ repository, firstSync = false }) => {
   let changed;
-  if (await isBusy(repository)) {
-  }
+  let lastCommit;
   if (firstSync) {
     let res = await repoSync(repository, firstSync);
     changed = res.changed;
   } else {
-    let res = await IsRepoChanged(repository);
+    const repo = await getRepository(repository);
+    const res = await IsRepoChanged(repo);
+    if (repo.state.isBusy) {
+      debug(`[actualizing] repository "${repository.name}" is busy.`);
+      return;
+    }
     changed = res.changed;
+    lastCommit = res.lastCommit;
   }
   if (changed) {
     debug(`repository ${repository.name} was changed!`);
@@ -170,7 +196,7 @@ export const actualize = async ({ repository, firstSync = false }) => {
             debug('readyForPull', readyForPull);
 
             if (readyForPull) {
-              await gitPull(repository, repFolderPath);
+              await gitPull(repository, lastCommit);
             } else {
               changeState(repository, {
                 status: 'warning',
@@ -185,7 +211,7 @@ export const actualize = async ({ repository, firstSync = false }) => {
   }
 };
 
-const gitPull = (repository, repFolderPath) => {
+const gitPull = (repository, lastCommit) => {
   return new Promise(async (resolve, reject) => {
     debug('gitPull', repository.name);
     await changeState(repository, {
@@ -193,6 +219,7 @@ const gitPull = (repository, repFolderPath) => {
       message: 'github pulling..\'',
       isBusy: true,
     });
+    const repFolderPath = getRepFolderPath(repository);
     series(
       [`git pull origin ${repository.branch}`],
       { cwd: repFolderPath },
@@ -216,8 +243,9 @@ const gitPull = (repository, repFolderPath) => {
         } else {
           debug(repository.name, 'stdout', stdout);
           const isUpToDateRe = new RegExp('Already up-to-date');
-          if (stdout.match(isUpToDateRe)) {
-            changeState(repository, {
+          await updateRepoDocLastCommit(repository, lastCommit);
+          if (stdout.match(isUpToDateRe) && !LOCAL_REBUILD) {
+            await changeState(repository, {
               status: 'ok',
               message: 'repository branch is up-to-date',
               isBusy: false,
@@ -242,7 +270,10 @@ const buildTestingContainer = repository =>
       repoScripts.scripts.hasOwnProperty('run_testing_container')
     ) {
       series(
-        [repoScripts.scripts.build_testing_container],
+        [
+          repoScripts.scripts.build_testing_container,
+          repoScripts.scripts.run_testing_container,
+        ],
         { cwd: repFolderPath },
         async (err, stdout, stderr) => {
           createOperation({
@@ -256,6 +287,7 @@ const buildTestingContainer = repository =>
           if (err) {
             debug(repository.name, 'err', err);
             debug(repository.name, 'stderr', stderr);
+            debug(repository.name, 'stdout', stdout);
             changeState(repository, {
               status: 'exec err',
               message: err.message,
@@ -373,6 +405,8 @@ export const repoSync = (repository, firstSync) =>
       state = repo.state;
       if (state.isBusy) {
         state.isBusy = false;
+        // state.status = 'none';
+        // state.message = '';
       }
     }
     db.Repository.update(
