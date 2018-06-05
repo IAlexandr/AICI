@@ -5,6 +5,7 @@ import logger from 'tools/logger';
 import { db } from 'tools/db/nedb';
 import path from 'path';
 import { series } from './exec';
+import { NOTFOUND } from 'dns';
 
 const { debug, time } = logger('project.modules.github-puller');
 
@@ -50,26 +51,33 @@ export const repoWatch = repository => {
   debug('[repoWatch] schedule created for:', repository.name);
 };
 
-const changeState = (repository, status) => {
-  db.Repository.update(
-    { _id: repository._id },
-    {
-      $set: {
-        ...{
-          status: {
-            updatedAt: new Date(),
+const changeState = (repository, status) =>
+  new Promise((resolve, reject) => {
+    debug(`repostiroy "${repository.name}" changing state: 
+    * status:${status.status}, 
+    * message: ${status.message}
+    * isBusy: ${status.isBusy} `);
+    db.Repository.update(
+      { _id: repository._id },
+      {
+        $set: {
+          ...{
+            status: {
+              updatedAt: new Date(),
+            },
           },
+          ...status,
         },
-        ...status,
       },
-    },
-    err => {
-      if (err) {
-        debug('changeState err', err);
+      err => {
+        if (err) {
+          debug('changeState err', err);
+          return reject(err);
+        }
+        return resolve();
       }
-    }
-  );
-};
+    );
+  });
 
 const createOperation = operation => {
   db.Operation.insert(operation, err => {
@@ -82,11 +90,31 @@ const createOperation = operation => {
 const getRepFolderPath = repository =>
   path.resolve(process.cwd(), `../${repository.name}`);
 
+const getRepository = repository =>
+  new Promise((resolve, reject) => {
+    db.Repository.find({ _id: repository._id }, (err, docs) => {
+      if (err) {
+        return reject(err);
+      }
+      if (!docs || !docs.length) {
+        return reject(new Error('repository not found.'));
+      }
+      return resolve(docs[0]);
+    });
+  });
+const isBusy = repository =>
+  new Promise(async (resolve, reject) => {
+    const repo = await getRepository(repository);
+    return resolve(repo.isBusy);
+  });
+
 export const actualize = async ({ repository, firstSync = false }) => {
   debug('actualize', repository.name);
   let changed;
+  if (await isBusy(repository)) {
+  }
   if (firstSync) {
-    let res = await repoSync(repository);
+    let res = await repoSync(repository, firstSync);
     changed = res.changed;
   } else {
     let res = await IsRepoChanged(repository);
@@ -94,9 +122,10 @@ export const actualize = async ({ repository, firstSync = false }) => {
   }
   if (changed) {
     debug(`repository ${repository.name} was changed!`);
-    changeState(repository, {
+    await changeState(repository, {
       status: 'actualizing..',
       message: 'remote repository has changes\'',
+      isBusy: true,
     });
     const repFolderPath = getRepFolderPath(repository);
     debug('repFolderPath', repFolderPath);
@@ -118,20 +147,22 @@ export const actualize = async ({ repository, firstSync = false }) => {
           changeState(repository, {
             status: 'exec err',
             message: err.message,
+            isBusy: false,
           });
         } else {
-          debug(repository.name, 'stdout', stdout);
+          // debug(repository.name, 'stdout', stdout);
           const branchRe = new RegExp(`origin\/${repository.branch}`, 'g');
           const nothingRe = new RegExp(
             'nothing to commit, working tree clean',
             'g'
           );
           if (!stdout.match(branchRe)) {
-            debug(repository.name, 'match branchRe', stdout.match(branchRe));
+            // debug(repository.name, 'match branchRe', stdout.match(branchRe));
             debug(`local branch is not '${repository.branch}'`);
             changeState(repository, {
               status: 'err',
               message: `local branch is not '${repository.branch}'`,
+              isBusy: false,
             });
           } else {
             const readyForPull = !!(
@@ -145,6 +176,7 @@ export const actualize = async ({ repository, firstSync = false }) => {
               changeState(repository, {
                 status: 'warning',
                 message: 'repository has uncommitted changes',
+                isBusy: false,
               });
             }
           }
@@ -155,11 +187,12 @@ export const actualize = async ({ repository, firstSync = false }) => {
 };
 
 const gitPull = (repository, repFolderPath) => {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     debug('gitPull', repository.name);
-    changeState(repository, {
+    await changeState(repository, {
       status: 'actualizing..',
       message: 'github pulling..\'',
+      isBusy: true,
     });
     series(
       [`git pull origin ${repository.branch}`],
@@ -179,6 +212,7 @@ const gitPull = (repository, repFolderPath) => {
           changeState(repository, {
             status: 'exec err',
             message: err.message,
+            isBusy: false,
           });
         } else {
           debug(repository.name, 'stdout', stdout);
@@ -187,6 +221,7 @@ const gitPull = (repository, repFolderPath) => {
             changeState(repository, {
               status: 'ok',
               message: 'repository branch is up-to-date',
+              isBusy: false,
             });
           } else {
             // TODO
@@ -281,16 +316,27 @@ export const readLocalCommit = repository =>
     );
   });
 
-export const repoSync = repository =>
+export const repoSync = (repository, firstSync) =>
   new Promise(async (resolve, reject) => {
     // TODO read last localCommit and compare with remote.
     const localCommitOid = await readLocalCommit(repository);
     const { changed, lastCommit } = await IsRepoChanged(repository);
 
+    let state = {
+      isBusy: false,
+      status: 'none',
+    };
     repository.lastCommit = lastCommit;
+    if (firstSync) {
+      const repo = await getRepository(repository);
+      state = repo.state;
+      if (state.isBusy) {
+        state.isBusy = false;
+      }
+    }
     db.Repository.update(
       { _id: repository._id },
-      { $set: { lastCommit } },
+      { $set: { lastCommit, state } },
       {},
       err => {
         if (err) {
@@ -304,6 +350,11 @@ export const repoSync = repository =>
           );
           return resolve({ changed: false });
         }
+        debug(
+          `repository ${
+            repository.name
+          } synchronized, remote branch has changes.`
+        );
         return resolve({ changed });
       }
     );
