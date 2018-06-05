@@ -277,7 +277,8 @@ const buildTestingContainer = repository =>
         { cwd: repFolderPath },
         async (err, stdout, stderr) => {
           createOperation({
-            name: 'repository package script: build_testing_container',
+            name:
+              'run repository package scripts: build_testing_container, run_testing_container',
             repoName: repository.name,
             stdout,
             stderr,
@@ -295,6 +296,11 @@ const buildTestingContainer = repository =>
             });
           } else {
             debug('build_testing_container result stdout:', stdout);
+            changeState(repository, {
+              status: 'updating container',
+              message: 'building container => restaring container',
+              isBusy: true,
+            });
           }
         }
       );
@@ -382,11 +388,9 @@ export const readLocalCommit = repository =>
           });
           return reject(err);
         }
-        debug('last commit result', stdout);
         const re = new RegExp('(commit)(.*?)(?=\\n)', 'g');
         let commitOid = stdout.match(re);
         commitOid = commitOid[0].replace('commit', '').trim();
-        debug('commitOid', commitOid);
         return resolve(commitOid);
       }
     );
