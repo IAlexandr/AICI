@@ -54,7 +54,7 @@ export const repoWatch = repository => {
 
 const changeState = (repository, state) =>
   new Promise((resolve, reject) => {
-    debug(`repostiroy "${repository.name}" changing state: 
+    debug(`repository "${repository.name}" changing state: 
     * status:${state.status}, 
     * message: ${state.message}
     * isBusy: ${state.isBusy} `);
@@ -62,8 +62,8 @@ const changeState = (repository, state) =>
       { _id: repository._id },
       {
         $set: {
-          ...{
-            state: {
+          state: {
+            ...{
               updatedAt: new Date(),
             },
             ...state,
@@ -82,7 +82,7 @@ const changeState = (repository, state) =>
 
 const updateRepoDocLastCommit = (repository, lastCommit) =>
   new Promise((resolve, reject) => {
-    debug(`repostiroy "${repository.name}" changing lastCommit`);
+    debug(`repostiroy "${repository.name}" changing lastCommit`, lastCommit);
     db.Repository.update(
       { _id: repository._id },
       {
@@ -135,6 +135,7 @@ export const actualize = async ({ repository, firstSync = false }) => {
   if (firstSync) {
     let res = await repoSync(repository, firstSync);
     changed = res.changed;
+    lastCommit = res.lastCommit;
   } else {
     const repo = await getRepository(repository);
     const res = await IsRepoChanged(repo);
@@ -427,14 +428,14 @@ export const repoSync = (repository, firstSync) =>
               repository.name
             } synchronized. branch is up-to-date.`
           );
-          return resolve({ changed: false });
+          return resolve({ changed: false, lastCommit });
         }
         debug(
           `repository ${
             repository.name
           } synchronized, remote branch has changes.`
         );
-        return resolve({ changed });
+        return resolve({ changed, lastCommit });
       }
     );
   });
