@@ -12,7 +12,7 @@
       "cwd": "${workspaceRoot}",
       "preLaunchTask": null,
       "runtimeExecutable": "babel-node",
-      "runtimeArgs": ["--plugins=dynamic-import-node"],
+      // "runtimeArgs": ["--plugins=dynamic-import-node"],
       "env": {
         "NODE_ENV": "development",
         "DEBUG": "deql*"
