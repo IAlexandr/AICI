@@ -51,22 +51,22 @@ export const repoWatch = repository => {
   debug('[repoWatch] schedule created for:', repository.name);
 };
 
-const changeState = (repository, status) =>
+const changeState = (repository, state) =>
   new Promise((resolve, reject) => {
     debug(`repostiroy "${repository.name}" changing state: 
-    * status:${status.status}, 
-    * message: ${status.message}
-    * isBusy: ${status.isBusy} `);
+    * status:${state.status}, 
+    * message: ${state.message}
+    * isBusy: ${state.isBusy} `);
     db.Repository.update(
       { _id: repository._id },
       {
         $set: {
           ...{
-            status: {
+            state: {
               updatedAt: new Date(),
             },
+            ...state,
           },
-          ...status,
         },
       },
       err => {
@@ -109,7 +109,6 @@ const isBusy = repository =>
   });
 
 export const actualize = async ({ repository, firstSync = false }) => {
-  debug('actualize', repository.name);
   let changed;
   if (await isBusy(repository)) {
   }
@@ -224,14 +223,59 @@ const gitPull = (repository, repFolderPath) => {
               isBusy: false,
             });
           } else {
-            // TODO
             debug('BUILD TEST CONTAINER');
+            await buildTestingContainer(repository);
           }
         }
       }
     );
   });
 };
+
+const buildTestingContainer = repository =>
+  new Promise((resolve, reject) => {
+    const repFolderPath = getRepFolderPath(repository);
+    const repoScripts = require(path.resolve(repFolderPath, 'package.json'));
+    debug('repoScripts', repoScripts.scripts);
+    if (
+      repoScripts.scripts.hasOwnProperty('build_testing_container') &&
+      repoScripts.scripts.hasOwnProperty('run_testing_container')
+    ) {
+      series(
+        [repoScripts.scripts.build_testing_container],
+        { cwd: repFolderPath },
+        async (err, stdout, stderr) => {
+          createOperation({
+            name: 'repository package script: build_testing_container',
+            repoName: repository.name,
+            stdout,
+            stderr,
+            err,
+            createdAt: new Date(),
+          });
+          if (err) {
+            debug(repository.name, 'err', err);
+            debug(repository.name, 'stderr', stderr);
+            changeState(repository, {
+              status: 'exec err',
+              message: err.message,
+              isBusy: false,
+            });
+          } else {
+            debug('build_testing_container result stdout:', stdout);
+          }
+        }
+      );
+    } else {
+      return reject(
+        new Error(
+          `repository '${
+            repository.name
+          }' package script "build_testing_container" or "run_testing_container" not found.`
+        )
+      );
+    }
+  });
 
 export const connectedBy = () => {
   const query = `{
@@ -322,10 +366,7 @@ export const repoSync = (repository, firstSync) =>
     const localCommitOid = await readLocalCommit(repository);
     const { changed, lastCommit } = await IsRepoChanged(repository);
 
-    let state = {
-      isBusy: false,
-      status: 'none',
-    };
+    let state = repository.state;
     repository.lastCommit = lastCommit;
     if (firstSync) {
       const repo = await getRepository(repository);
