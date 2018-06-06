@@ -253,7 +253,7 @@ const gitPull = (repository, lastCommit) => {
             });
           } else {
             debug('BUILD TEST CONTAINER');
-            await buildTestingContainer(repository);
+            await testingContainer(repository);
           }
         }
       }
@@ -261,7 +261,7 @@ const gitPull = (repository, lastCommit) => {
   });
 };
 
-const buildTestingContainer = repository =>
+const testingContainer = repository =>
   new Promise((resolve, reject) => {
     const repFolderPath = getRepFolderPath(repository);
     const repoScripts = require(path.resolve(repFolderPath, 'package.json'));
@@ -302,6 +302,7 @@ const buildTestingContainer = repository =>
               message: 'building container => restaring container',
               isBusy: true,
             });
+            await deployContainer(repository);
           }
         }
       );
@@ -311,6 +312,61 @@ const buildTestingContainer = repository =>
           `repository '${
             repository.name
           }' package script "build_testing_container" or "run_testing_container" not found.`
+        )
+      );
+    }
+  });
+
+const deployContainer = repository =>
+  new Promise((resolve, reject) => {
+    const repFolderPath = getRepFolderPath(repository);
+    const repoScripts = require(path.resolve(repFolderPath, 'package.json'));
+    debug('repoScripts', repoScripts.scripts);
+    if (
+      repoScripts.scripts.hasOwnProperty('build_container') &&
+      repoScripts.scripts.hasOwnProperty('restart_container')
+    ) {
+      series(
+        [
+          repoScripts.scripts.build_container,
+          repoScripts.scripts.restart_container,
+        ],
+        { cwd: repFolderPath },
+        async (err, stdout, stderr) => {
+          createOperation({
+            name:
+              'run repository package scripts: build_container, restart_container',
+            repoName: repository.name,
+            stdout,
+            stderr,
+            err,
+            createdAt: new Date(),
+          });
+          if (err) {
+            debug(repository.name, 'err', err);
+            debug(repository.name, 'stderr', stderr);
+            debug(repository.name, 'stdout', stdout);
+            changeState(repository, {
+              status: 'exec err',
+              message: err.message,
+              isBusy: false,
+            });
+          } else {
+            debug('build_testing_container result stdout:', stdout);
+            changeState(repository, {
+              status: 'container updated',
+              message: 'up',
+              isBusy: false,
+            });
+          }
+        }
+      );
+    } else {
+      return reject(
+        new Error(
+          `repository '${
+            repository.name
+          }' package script "build_container" or "restart_container" not found.`
         )
       );
     }
