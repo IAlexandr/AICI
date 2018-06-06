@@ -4,6 +4,7 @@ const schema = `
   type Query{
     repositories: [Repository]
     repository(name: String): Repository
+    readLocalCommit(name: String): String!
   }
   type Repository{
     name: String
@@ -11,6 +12,11 @@ const schema = `
     branch: String
     lastCommit: LastCommit
     state: RepositoryState
+  }
+  input RepositoryInput{
+    name: String
+    owner: String
+    branch: String
   }
   type LastCommit{
     oid: String
@@ -24,7 +30,10 @@ const schema = `
     isBusy: Boolean
   }
   type Mutation{
+    addRepository(repository: RepositoryInput): Repository!
+    removeRepository(name: String): Int
     rebuildRepository(name: String): Boolean!
+    watchRepository(name: String): Boolean!
   }
 `;
 // type Subscription{
