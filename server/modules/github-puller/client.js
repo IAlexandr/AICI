@@ -52,6 +52,21 @@ export const repoWatch = repository => {
   debug('[repoWatch] schedule created for:', repository.name);
 };
 
+export const rebuildRepository = name =>
+  new Promise((resolve, reject) => {
+    db.Repository.find({ name }, {}, async (err, docs) => {
+      if (err) {
+        return reject(err);
+      }
+      if (!docs || !docs.length) {
+        return reject(new Error('Repository not found'));
+      }
+      const repository = docs[0];
+      const result = await testingContainer(repository);
+      return resolve(result);
+    });
+  });
+
 const changeState = (repository, state) =>
   new Promise((resolve, reject) => {
     debug(`repository "${repository.name}" changing state: 
@@ -246,14 +261,14 @@ const gitPull = (repository, lastCommit) => {
           const isUpToDateRe = new RegExp('Already up-to-date');
           await updateRepoDocLastCommit(repository, lastCommit);
           if (stdout.match(isUpToDateRe) && !LOCAL_REBUILD) {
-            await changeState(repository, {
+            return changeState(repository, {
               status: 'ok',
               message: 'repository branch is up-to-date',
               isBusy: false,
             });
           } else {
             debug('BUILD TEST CONTAINER');
-            await testingContainer(repository);
+            return testingContainer(repository);
           }
         }
       }
@@ -262,7 +277,12 @@ const gitPull = (repository, lastCommit) => {
 };
 
 const testingContainer = repository =>
-  new Promise((resolve, reject) => {
+  new Promise(async (resolve, reject) => {
+    await changeState(repository, {
+      status: 'testing',
+      message: 'building test container => testing container',
+      isBusy: true,
+    });
     const repFolderPath = getRepFolderPath(repository);
     const repoScripts = require(path.resolve(repFolderPath, 'package.json'));
     debug('repoScripts', repoScripts.scripts);
@@ -295,14 +315,10 @@ const testingContainer = repository =>
               message: err.message,
               isBusy: false,
             });
+            return reject(err);
           } else {
             debug('build_testing_container result stdout:', stdout);
-            changeState(repository, {
-              status: 'updating container',
-              message: 'building container => restaring container',
-              isBusy: true,
-            });
-            await deployContainer(repository);
+            deployContainer(repository).then(resolve);
           }
         }
       );
@@ -318,7 +334,12 @@ const testingContainer = repository =>
   });
 
 const deployContainer = repository =>
-  new Promise((resolve, reject) => {
+  new Promise(async (resolve, reject) => {
+    await changeState(repository, {
+      status: 'updating',
+      message: 'building container => restart container',
+      isBusy: true,
+    });
     const repFolderPath = getRepFolderPath(repository);
     const repoScripts = require(path.resolve(repFolderPath, 'package.json'));
     debug('repoScripts', repoScripts.scripts);
@@ -351,6 +372,7 @@ const deployContainer = repository =>
               message: err.message,
               isBusy: false,
             });
+            return reject(err);
           } else {
             debug('build_testing_container result stdout:', stdout);
             changeState(repository, {
@@ -358,6 +380,7 @@ const deployContainer = repository =>
               message: 'up',
               isBusy: false,
             });
+            return resolve(true);
           }
         }
       );
@@ -503,4 +526,5 @@ export default {
   IsRepoChanged,
   repoSync,
   repoWatch,
+  rebuildRepository,
 };
