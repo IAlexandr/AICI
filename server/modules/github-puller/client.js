@@ -33,14 +33,17 @@ export const init = async db => {
 export const stopRepoWatch = repository => {
   if (schedules[repository.name]) {
     schedules[repository.name].cancel();
+    delete schedules[repository.name];
     debug('schebdule', repository.name, 'was canceled.');
+    return true;
   }
+  return false;
 };
 
 export const repoWatch = repository => {
   if (schedules.hasOwnProperty(repository.name)) {
     debug('[repoWatch] ', repository.name, 'already has schedule.');
-    return;
+    return true;
   }
   actualize({ repository, firstSync: true });
   schedules[repository.name] = schedule.scheduleJob('*/1 * * * *', function(
@@ -50,6 +53,7 @@ export const repoWatch = repository => {
   });
 
   debug('[repoWatch] schedule created for:', repository.name);
+  return true;
 };
 
 export const rebuildRepository = name =>
