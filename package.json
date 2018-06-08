@@ -8,20 +8,15 @@
     "init_client": "cd client/deql-ms-client && yarn",
     "init_server": "cd server && yarn",
     "client": "cd client/deql-ms-client && yarn start",
-    "server":
-      "set DEBUG=deql* && nodemon --ignore ./client --exec babel-node ./server/deql-ms-server",
+    "server": "set DEBUG=deql* && nodemon --ignore ./client --exec babel-node ./server/deql-ms-server",
     "server_prod": "babel-node ./server/deql-ms-server",
     "start": "concurrently \"yarn run server\" \"yarn run client\"",
-    "build":
-      "docker build -f ./dockerfile --cache-from geoworks/deql-ms -t geoworks/deql-ms .",
-    "build_client_server":
-      "docker build -f ./dockerfile-client-server --cache-from geoworks/deql-ms-client-server -t geoworks/deql-ms-client-server .",
-    "build_redis":
-      "docker build -f ./docker/dockerfile-redis --cache-from geoworks/redis -t geoworks/redis .",
-    "redis_commander":
-      "docker build -f ./docker/dockerfile-redis-commander --cache-from geoworks/redis-commander -t geoworks/redis-commander . && docker-compose -f ./docker/docker-compose-redis-commander.yml up -d --build",
-    "ms_deps_install":
-      "yarn run build_redis && docker-compose -f ./docker/docker-compose-deps.yml up -d --build"
+    "restart_container": "docker-compose -f ./docker-compose.yml down && docker-compose -f ./docker-compose.yml up -d",
+    "build": "docker build -f ./dockerfile --cache-from geoworks/deql-ms-ci -t geoworks/deql-ms-ci .",
+    "build_client_server": "docker build -f ./dockerfile-client-server --cache-from geoworks/deql-ms-client-server -t geoworks/deql-ms-client-server .",
+    "build_redis": "docker build -f ./docker/dockerfile-redis --cache-from geoworks/redis -t geoworks/redis .",
+    "redis_commander": "docker build -f ./docker/dockerfile-redis-commander --cache-from geoworks/redis-commander -t geoworks/redis-commander . && docker-compose -f ./docker/docker-compose-redis-commander.yml up -d --build",
+    "ms_deps_install": "yarn run build_redis && docker-compose -f ./docker/docker-compose-deps.yml up -d --build"
   },
   "repository": {
     "type": "git",
