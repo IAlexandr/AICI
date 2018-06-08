@@ -11,7 +11,7 @@
     "server": "set DEBUG=deql* && nodemon --ignore ./client --exec babel-node ./server/deql-ms-server",
     "server_prod": "babel-node ./server/deql-ms-server",
     "start": "concurrently \"yarn run server\" \"yarn run client\"",
-    "restart_container": "docker-compose -f ./docker-compose.yml down && docker-compose -f ./docker-compose.yml up -d",
+    "restart_container": "docker-compose -f ./docker-compose-prod.yml down && docker-compose -f ./docker-compose-prod.yml up -d",
     "build": "docker build -f ./dockerfile --cache-from geoworks/deql-ms-ci -t geoworks/deql-ms-ci .",
     "build_client_server": "docker build -f ./dockerfile-client-server --cache-from geoworks/deql-ms-client-server -t geoworks/deql-ms-client-server .",
     "build_redis": "docker build -f ./docker/dockerfile-redis --cache-from geoworks/redis -t geoworks/redis .",
