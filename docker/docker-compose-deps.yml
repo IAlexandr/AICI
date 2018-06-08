@@ -1,49 +1,25 @@
 version: '3'
 networks:
-  deqlms:
+  deql-gis-mapcam:
     driver: bridge
 services:
 ################################
-  ms-prisma:
-    image: prismagraphql/prisma:1.8
-    container_name: ms-prisma
-    restart: always
-    labels:
-      org.label-schema.group: "ms-deps"
-    ports:
-    - "4466:4466"
-    environment:
-      PRISMA_CONFIG: |
-        port: 4466
-        # uncomment the next line and provide the env var PRISMA_MANAGEMENT_API_SECRET=my-secret to activate cluster security
-        # managementApiSecret: my-secret
-        databases:
-          default:
-            connector: postgres
-            host: ms-postgis
-            port: 5432
-            user: mspostgis
-            password: mspostgis
-            migrations: true
-    networks:
-      - deqlms
-################################
-  ms-postgis:
+  deql-gis-postgis:
     image: "mdillon/postgis"
-    container_name: ms-postgis
+    container_name: deql-gis-postgis
     restart: always
     environment:
       POSTGRES_USER: mspostgis
       POSTGRES_PASSWORD: mspostgis
-      POSTGRES_DB: prisma
+      POSTGRES_DB: mapcam
     labels:
       org.label-schema.group: "ms-deps"
     ports:
      - "5445:5432"
     networks:
-      - deqlms
+      - deql-gis-mapcam
 ################################
-  ms-pgadmin:
+  deql-gis-pgadmin:
     image: "dpage/pgadmin4"
     container_name: pgadmin
     restart: always
@@ -55,16 +31,16 @@ services:
     ports:
      - "6543:80"
     networks:
-      - deqlms
+      - deql-gis-mapcam
 ################################
-  ms-redis:
+  deql-gis-redis:
     image: "geoworks/redis"
-    container_name: ms-redis
+    container_name: deql-gis-redis
     restart: always
     labels:
       org.label-schema.group: "ms-deps"
     ports:
      - "32768:6379"
     networks:
-      - deqlms
+      - deql-gis-mapcam
 ################################
