@@ -12,6 +12,8 @@ services:
       POSTGRES_USER: mspostgis
       POSTGRES_PASSWORD: mspostgis
       POSTGRES_DB: mapcam
+    volumes:
+    - /opt/postgres:/var/lib/postgresql/data
     labels:
       org.label-schema.group: "ms-deps"
     ports:

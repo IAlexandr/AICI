@@ -1,0 +1,17 @@
+version: '3'
+networks:
+  deqlms:
+    driver: bridge
+services:
+  deql-ms-ci:
+    image: "geoworks/deql-ms-ci"
+    container_name: deql-ms-ci
+    restart: always
+    labels:
+      org.label-schema.group: "deql-ms"
+    environment:
+      DEBUG: deql*
+    ports:
+     - "3333:8888"
+    networks:
+      - deqlms
