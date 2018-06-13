@@ -1,5 +1,5 @@
 import nedb from './nedb';
-import { default as githubPuller } from './client';
+import { default as githubPuller } from './puller';
 import typeDefs from './graphql/type-defs';
 import resolvers from './graphql/resolvers';
 

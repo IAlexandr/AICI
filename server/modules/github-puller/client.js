@@ -172,67 +172,68 @@ export const actualize = async ({ repository, firstSync = false }) => {
       message: 'remote repository has changes\'',
       isBusy: true,
     });
+    // TODO if repo or submodules have changes
+
+    // have changes
+
+    
     const repFolderPath = getRepFolderPath(repository);
     debug('repFolderPath', repFolderPath);
-    series(
-      ['git status'],
-      { cwd: repFolderPath },
-      async (err, stdout, stderr) => {
-        createOperation({
-          name: 'git status',
-          repoName: repository.name,
-          stdout,
-          stderr,
-          err,
-          createdAt: new Date(),
-        });
-        if (err) {
-          debug(repository.name, 'err', err);
-          debug(repository.name, 'stderr', stderr);
-          changeState(repository, {
-            status: 'exec err',
-            message: err.message,
-            isBusy: false,
-          });
-        } else {
-          // debug(repository.name, 'stdout', stdout);
-          const branchRe = new RegExp(`origin\/${repository.branch}`, 'g');
-          const nothingRe = new RegExp(
-            'nothing to commit, working tree clean',
-            'g'
-          );
-          if (!stdout.match(branchRe)) {
-            // debug(repository.name, 'match branchRe', stdout.match(branchRe));
-            debug(`local branch is not '${repository.branch}'`);
-            changeState(repository, {
-              status: 'err',
-              message: `local branch is not '${repository.branch}'`,
-              isBusy: false,
-            });
-          } else {
-            const readyForPull = !!(
-              stdout.match(branchRe) && stdout.match(nothingRe)
-            );
-            debug('readyForPull', readyForPull);
+    const readyForPull = await isReadyForPull({
+      folderPath: repFolderPath,
+      repository
+    });
+    if (readyForPull) {
+      await gitPull(repository, lastCommit);
 
-            if (readyForPull) {
-              await gitPull(repository, lastCommit);
-            } else {
-              changeState(repository, {
-                status: 'warning',
-                message: 'repository has uncommitted changes',
-                isBusy: false,
-              });
-            }
-          }
-        }
-      }
-    );
+    } else {
+      changeState(repository, {
+        status: 'warning',
+        message: 'repository has uncommitted changes',
+        isBusy: false,
+      });
+    }
   }
 };
 
+const isReadyForPull = ({ folderPath, branch, repository }) => new Promise(async (resolve, reject) => {
+  const { stdout, stderr } = await exec({
+    commands: [`git status`],
+    options: { cwd: folderPath },
+    operation: { name: `git status (folderPAth: ${folderPath})` },
+    repository,
+  });
+
+  const branchRe = new RegExp(`origin\/${branch}`, 'g');
+  const nothingRe = new RegExp(
+    'nothing to commit, working tree clean',
+    'g'
+  );
+  if (!stdout.match(branchRe)) {
+    // debug(repository.name, 'match branchRe', stdout.match(branchRe));
+    debug(`local branch is not '${branch}'`);
+    changeState(repository, {
+      status: 'err',
+      message: `local branch is not '${branch}'`,
+      isBusy: false,
+    });
+    return resolve({readyForPull: false});
+  } else {
+    const readyForPull = !!(
+      stdout.match(branchRe) && stdout.match(nothingRe)
+    );
+    debug('readyForPull', readyForPull);
+    return resolve({readyForPull});
+  }
+});
+
 const gitPull = (repository, lastCommit) => {
   return new Promise(async (resolve, reject) => {
+    const repFolderPath = getRepFolderPath(repository);
+    const repoScripts = require(path.resolve(repFolderPath, 'package.json'));
+    if (repoScripts.scripts.hasOwnProperty('git-pull-submodules')) {
+    }
+
     debug('gitPull', repository.name);
     await changeState(repository, {
       status: 'actualizing..',
@@ -240,6 +241,25 @@ const gitPull = (repository, lastCommit) => {
       isBusy: true,
     });
     const repFolderPath = getRepFolderPath(repository);
+    const { stdout, stderr } = await exec({
+      commands: [`git pull origin ${repository.branch}`],
+      options: { cwd: repFolderPath },
+      operation: { name: 'git pull' },
+      repository,
+    });
+    const isUpToDateRe = new RegExp('Already up-to-date');
+    await updateRepoDocLastCommit(repository, lastCommit);
+    if (stdout.match(isUpToDateRe) && !LOCAL_REBUILD) {
+      return changeState(repository, {
+        status: 'ok',
+        message: 'repository branch is up-to-date',
+        isBusy: false,
+      });
+    } else {
+      debug('BUILD TEST CONTAINER');
+      testingContainer(repository).then(resolve);
+    }
+
     series(
       [`git pull origin ${repository.branch}`],
       { cwd: repFolderPath },
@@ -279,6 +299,36 @@ const gitPull = (repository, lastCommit) => {
     );
   });
 };
+
+const exec = props =>
+  new Promise((resolve, reject) => {
+    const { commands, options, operation, repository } = props;
+    const { name } = operation;
+    series(commands, options, async (err, stdout, stderr) => {
+      createOperation({
+        name,
+        repoName: repository.name,
+        stdout,
+        stderr,
+        err,
+        createdAt: new Date(),
+      });
+      if (err) {
+        debug('repository:', repository.name, 'err', err);
+        debug('repository:', repository.name, 'stderr', stderr);
+        debug('repository:', repository.name, 'stdout', stdout);
+        changeState(repository, {
+          status: 'exec err',
+          message: err.message,
+          isBusy: false,
+        });
+        return reject(err);
+      } else {
+        debug('repository:', repository.name, 'stdout:', stdout);
+        return resolve(stdout, stderr);
+      }
+    });
+  });
 
 const testingContainer = repository =>
   new Promise(async (resolve, reject) => {

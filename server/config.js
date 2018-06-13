@@ -6,8 +6,9 @@ export default {
     useEngine: false,
   },
   redis: {
-    host: '10.10.10.20',
+    host: '10.157.1.12',
     port: 32768,
+    // password: 'redispass'
   },
   sequelize: {
     options: {
@@ -34,5 +35,5 @@ export default {
     },
   },
   NODE_ENV: 'development',
-  githubApiToken: '',
+  githubApiToken: '0f51400aa80ef847db3b4984a91bb693ace0140d',
 };

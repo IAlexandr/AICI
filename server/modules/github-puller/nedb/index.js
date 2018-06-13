@@ -1,6 +1,6 @@
 import logger from 'tools/logger';
 const { debug, time } = logger('nedb.dbseed.repositories');
-const force = true;
+const FORCE = true;
 
 const tempOperations = [];
 const newRepoDocs = [
@@ -8,19 +8,22 @@ const newRepoDocs = [
     name: 'test1',
     owner: 'IAlexandr',
     branch: 'master',
-    lastCommit: {
+    sync: true,
+    localCommit: {
       oid: null,
     },
     state: {
       isBusy: false,
       status: 'none',
+      remoteCommit: { oid: null },
     },
   },
   // {
   //   name: 'deql-ms-auth',
   //   owner: 'IAlexandr',
   //   branch: 'master',
-  //   lastCommit: {
+  // sync: true,
+  //   localCommit: {
   //     oid: null,
   //   },
   //   state: {
@@ -32,7 +35,8 @@ const newRepoDocs = [
   //   name: 'deql-ms-system',
   //   owner: 'IAlexandr',
   //   branch: 'master',
-  //   lastCommit: {
+  // sync: true,
+  //   localCommit: {
   //     oid: null,
   //   },
   //   state: {
@@ -80,7 +84,7 @@ export default {
   dbmodels: collections,
   dbseed: db =>
     new Promise(async (resolve, reject) => {
-      if (force) {
+      if (FORCE) {
         const removePromises = Object.keys(collections).map(collection =>
           remove(collection, db)
         );

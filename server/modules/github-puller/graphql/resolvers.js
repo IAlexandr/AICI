@@ -4,7 +4,7 @@ import {
   readLocalCommit,
   repoWatch,
   stopRepoWatch,
-} from './../client';
+} from './../puller';
 
 const findRepositoryByName = (name, db) =>
   new Promise((resolve, reject) => {
