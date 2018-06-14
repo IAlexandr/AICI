@@ -60,7 +60,10 @@ export const gitPull = repository =>
       isBusy: true,
     });
     const { stdout, stderr } = await exec({
-      commands: [`git pull origin ${repo.branch}`],
+      commands: [
+        `git pull origin ${repo.branch}`,
+        'git pull --recurse-submodules',
+      ],
       options: { cwd: repFolderPath },
       operation: { name: 'git pull' },
       repository,

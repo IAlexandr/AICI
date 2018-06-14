@@ -10,19 +10,20 @@ export const repoWatch = repository => {
     debug('[repoWatch] ', repository.name, 'already has schedule.');
     return true;
   }
-  actualize({ repository, firstSync: true });
-  schedules[repository.name] = schedule.scheduleJob('*/1 * * * *', function(
-    fireDate
-  ) {
-    try {
-      actualize({ repository });
-    } catch (err) {
-      debug('actualize err', err.message);
-    }
-  });
-
-  debug('[repoWatch] schedule created for:', repository.name);
-  return true;
+  if (repository.sync) {
+    actualize({ repository, firstSync: true });
+    schedules[repository.name] = schedule.scheduleJob(
+      '*/1 * * * *',
+      function(fireDate) {
+        try {
+          actualize({ repository });
+        } catch (err) {
+          debug('actualize err', err.message);
+        }
+      }
+    );
+    debug('[repoWatch] schedule created for:', repository.name);
+  }
 };
 
 export const stopRepoWatch = repository => {

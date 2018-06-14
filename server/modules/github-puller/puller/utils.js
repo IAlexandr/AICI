@@ -28,7 +28,7 @@ export const exec = props =>
         });
         return reject(err);
       } else {
-        debug('repository:', repository.name, 'stdout:', stdout);
+        // debug('repository:', repository.name, 'stdout:', stdout);
         return resolve({ stdout, stderr });
       }
     });

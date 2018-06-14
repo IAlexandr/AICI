@@ -16,7 +16,6 @@ const { debug, time } = logger('project.modules.github-puller.actualizing');
 export default ({ repository, firstSync = false }) =>
   new Promise(async (resolve, reject) => {
     try {
-      const done = time('actualizing');
       await repoSync(repository, firstSync);
       const { remoteCommit, changed } = await getRemoteCommit(repository);
       let repo = await getRepository(repository);
@@ -50,7 +49,7 @@ export default ({ repository, firstSync = false }) =>
       // have changes
       const repFolderPath = getRepFolderPath(repo);
       debug('repFolderPath', repFolderPath);
-      const readyForPull = await isReadyForPull({
+      const { readyForPull } = await isReadyForPull({
         folderPath: repFolderPath,
         branch: repo.branch,
         repository: repo,

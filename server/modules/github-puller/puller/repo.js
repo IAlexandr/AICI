@@ -58,7 +58,6 @@ export const readLocalCommit = repository =>
     const re = new RegExp('(commit)(.*?)(?=\\n)', 'g');
     let commitOid = stdout.match(re);
     commitOid = commitOid[0].replace('commit', '').trim();
-    debug('commitOid', commitOid);
     return resolve(commitOid);
   });
 
