@@ -12,6 +12,9 @@ services:
     environment:
       db_options_host: postgis
       DEBUG: deql*
+    logging:
+      options:
+        max-size: 50m
     ports:
      - "3333:8888"
     networks:

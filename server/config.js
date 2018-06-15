@@ -35,5 +35,5 @@ export default {
     },
   },
   NODE_ENV: 'development',
-  githubApiToken: '0f51400aa80ef847db3b4984a91bb693ace0140d',
+  githubApiToken: '771858e7e0363dc6bd82468fb15c2b3ffdcc4c51',
 };
