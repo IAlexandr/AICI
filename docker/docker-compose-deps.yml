@@ -1,6 +1,7 @@
-version: '3'
+version: '3.5'
 networks:
   deql-gis-mapcam:
+    name: deql-gis-mapcam
     driver: bridge
 services:
 ################################

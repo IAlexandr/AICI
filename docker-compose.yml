@@ -12,6 +12,8 @@ services:
     environment:
       db_options_host: postgis
       DEBUG: deql*
+      redis_host: deql-gis-redis
+      redis_port: 32768
     logging:
       options:
         max-size: 50m

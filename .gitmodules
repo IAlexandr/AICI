@@ -4,3 +4,4 @@
 [submodule "server/deql-ms-server"]
 	path = server/deql-ms-server
 	url = git@github.com:IAlexandr/deql-ms-server.git
+	#url = deql-ms-server:IAlexandr/deql-ms-server
