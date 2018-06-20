@@ -1,6 +1,6 @@
 import logger from 'tools/logger';
 const { debug, time } = logger('nedb.dbseed.repositories');
-const FORCE = true;
+import options from 'tools/options';
 
 const tempOperations = [];
 const newRepoDocs = [
@@ -87,7 +87,7 @@ export default {
   dbmodels: collections,
   dbseed: db =>
     new Promise(async (resolve, reject) => {
-      if (FORCE) {
+      if (options.config.nedb.force) {
         const removePromises = Object.keys(collections).map(collection =>
           remove(collection, db)
         );
