@@ -15,7 +15,8 @@
   nedb: {
     cleaner: {
       num: 2,
-      type: "minutes"
+      type: "minutes",
+      scheduleJob: "*/2 * * * *"
     }
   },
   sequelize: {

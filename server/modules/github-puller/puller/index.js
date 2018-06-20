@@ -18,6 +18,7 @@ export const init = async db => {
   await startClean({
     num: options.config.nedb.cleaner.num,
     type: options.config.nedb.cleaner.type,
+    scheduleJob: options.config.nedb.cleaner.scheduleJob,
   });
   const client = githubGqlClient();
   const profileName = await connectedBy();

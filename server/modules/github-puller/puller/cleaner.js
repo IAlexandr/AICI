@@ -4,11 +4,12 @@ import schedule from 'node-schedule';
 import logger from 'tools/logger';
 const { debug, time } = logger('project.modules.github-puller.cleaner');
 
-export const startClean = ({ num, type }) =>
+export const startClean = ({ num, type, scheduleJob = '*/1 * * * *' }) =>
   new Promise(async resolve => {
     try {
-      await clean({ num, type });
-      schedule.scheduleJob('*/1 * * * *', function(fireDate) {
+      debug('start cleaner scheduleJob:', scheduleJob);
+      await clean({ num, type, scheduleJob });
+      schedule.scheduleJob(scheduleJob, function(fireDate) {
         clean({ num, type });
       });
       return resolve();
