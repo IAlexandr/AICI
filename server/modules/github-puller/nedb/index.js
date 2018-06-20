@@ -37,6 +37,7 @@ const newRepoDocs = [
     owner: 'IAlexandr',
     branch: 'master',
     sync: true,
+    pullWithUncommittedChanges: true,
     localCommit: {
       oid: null,
     },

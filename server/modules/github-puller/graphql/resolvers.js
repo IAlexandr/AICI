@@ -1,10 +1,5 @@
 import GraphQLJSON from 'graphql-type-json';
-import {
-  rebuildRepository,
-  readLocalCommit,
-  repoWatch,
-  stopRepoWatch,
-} from './../puller';
+import { default as puller } from './../puller';
 
 const findRepositoryByName = (name, db) =>
   new Promise((resolve, reject) => {
@@ -36,7 +31,9 @@ export default pubsub => ({
     repository: (repository, { name }, { db }) =>
       findRepositoryByName(name, db),
     readLocalCommit: (parent, { name }, { db }) =>
-      findRepositoryByName(name, db).then(readLocalCommit),
+      findRepositoryByName(name, db).then(puller.readLocalCommit),
+    watchingRepositories: (parent, {}, { db }) =>
+      puller.watchingRepositories(),
   },
   // Subscription: {
   //   fileAdded: {
@@ -79,11 +76,14 @@ export default pubsub => ({
         });
       }),
     watchRepository: (parent, { name }, { db }) =>
-      findRepositoryByName(name, db).then(repo => repoWatch(repo)),
+      findRepositoryByName(name, db).then(repo => puller.repoWatch(repo)),
     stopWatchRepository: (parent, { name }, { db }) =>
-      findRepositoryByName(name, db).then(repo => stopRepoWatch(repo)),
-    rebuildRepository: (parent, { name }, { db }) => {
-      return rebuildRepository(name);
-    },
+      findRepositoryByName(name, db).then(repo =>
+        puller.stopRepoWatch(repo)
+      ),
+    rebuildRepository: (parent, { name }, { db }) =>
+      findRepositoryByName(name, db).then(repo =>
+        puller.actualize({ repository: repo })
+      ),
   },
 });

@@ -1,11 +1,13 @@
 import options from 'tools/options';
+import actualize from './actualizing';
+import { readLocalCommit } from './repo';
 import { db } from 'tools/db/nedb';
+import { stopRepoWatch, repoWatch, watchingRepositories } from './watching';
 import {
   default as githubGqlClient,
   connectedBy,
   fetchChanges,
 } from './github-gql-client';
-import { repoWatch } from './watching';
 import logger from 'tools/logger';
 
 const { debug, time } = logger('project.modules.github-puller.puller');
@@ -29,4 +31,9 @@ export default {
   init,
   connectedBy,
   fetchChanges,
+  stopRepoWatch,
+  repoWatch,
+  watchingRepositories,
+  actualize,
+  readLocalCommit,
 };

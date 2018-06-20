@@ -30,9 +30,15 @@ export const isReadyForPull = ({ folderPath, branch, repository }) =>
       });
       return resolve({ readyForPull: false });
     } else {
-      const readyForPull = !!(
+      let readyForPull = !!(
         stdout.match(branchRe) && stdout.match(nothingRe)
       );
+      if (
+        !stdout.match(nothingRe) &&
+        repository.pullWithUncommittedChanges === true
+      ) {
+        readyForPull = true;
+      }
       if (!readyForPull) {
         await changeState(repository, {
           status: 'err',

@@ -5,6 +5,7 @@ const schema = `
     repositories: [Repository]
     repository(name: String): Repository
     readLocalCommit(name: String): String!
+    watchingRepositories: [String]
   }
   type Repository{
     name: String
