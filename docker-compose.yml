@@ -14,6 +14,8 @@ services:
       DEBUG: deql*
       redis_host: deql-gis-redis
       redis_port: 32768
+      nedb_cleaner_num: 5
+      nedb_cleaner_type: minutes
     volumes:
     - /home/support1/mapcam2018/AICI/nedb-collections:/home/deql-ms/nedb-collections
     logging:

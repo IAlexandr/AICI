@@ -15,7 +15,10 @@ const { debug, time } = logger('project.modules.github-puller.puller');
 
 export const init = async db => {
   debug('init');
-  await startClean({});
+  await startClean({
+    num: options.config.nedb.cleaner.num,
+    type: options.config.nedb.cleaner.type,
+  });
   const client = githubGqlClient();
   const profileName = await connectedBy();
   debug('connected by profileName:', profileName);
