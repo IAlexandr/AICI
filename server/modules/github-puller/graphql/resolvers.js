@@ -43,17 +43,24 @@ export default pubsub => ({
   //   },
   // },
   Mutation: {
-    addRepository: (parent, { repository }, { db }) =>
+    addRepository: (
+      parent,
+      { repository, sync, pullWithUncommittedChanges },
+      { db }
+    ) =>
       new Promise((resolve, reject) => {
         repository = {
           ...repository,
           ...{
-            lastCommit: {
+            localCommit: {
               oid: null,
             },
+            sync,
+            pullWithUncommittedChanges,
             state: {
               isBusy: false,
               status: 'none',
+              remoteCommit: { oid: null },
             },
           },
         };

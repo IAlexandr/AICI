@@ -11,7 +11,9 @@ const schema = `
     name: String
     owner: String
     branch: String
-    lastCommit: LastCommit
+    localCommit: CommitInfo
+    sync: Boolean,
+    pullWithUncommittedChanges: Boolean,
     state: RepositoryState
   }
   input RepositoryInput{
@@ -19,7 +21,7 @@ const schema = `
     owner: String
     branch: String
   }
-  type LastCommit{
+  type CommitInfo{
     oid: String
     messageHeadline: String
     pushedDate: String
@@ -29,9 +31,10 @@ const schema = `
     status: String
     message: String
     isBusy: Boolean
+    remoteCommit: CommitInfo
   }
   type Mutation{
-    addRepository(repository: RepositoryInput): Repository!
+    addRepository(repository: RepositoryInput, sync: Boolean = true, pullWithUncommittedChanges: Boolean = false): Repository!
     removeRepository(name: String): Int
     rebuildRepository(name: String): Boolean!
     watchRepository(name: String): Boolean!
