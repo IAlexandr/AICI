@@ -9,6 +9,7 @@
     "init_server": "cd server && yarn",
     "client": "cd client/deql-ms-client && yarn start",
     "server": "set DEBUG=deql* && nodemon --ignore ./client --exec babel-node ./server/deql-ms-server",
+    "linserver": "export DEBUG=deql* && nodemon --ignore ./client --exec babel-node ./server/deql-ms-server",
     "server_prod": "babel-node ./server/deql-ms-server",
     "start": "concurrently \"yarn run server\" \"yarn run client\"",
     "restart_container": "docker-compose -f ./docker-compose-prod.yml down && docker-compose -f ./docker-compose-prod.yml up -d",
