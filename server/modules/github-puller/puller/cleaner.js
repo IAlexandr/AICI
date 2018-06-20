@@ -15,7 +15,7 @@ export const startClean = ({ num, type }) =>
     } catch (e) {}
   });
 
-const clean = ({ num = 1, type = 'minutes' }) =>
+export const clean = ({ num = 1, type = 'minutes' }) =>
   new Promise((resolve, reject) => {
     const done = time('cleaning..', num, type);
     db.Operation.remove(

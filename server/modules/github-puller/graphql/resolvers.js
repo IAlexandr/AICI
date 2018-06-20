@@ -1,5 +1,6 @@
 import GraphQLJSON from 'graphql-type-json';
 import { default as puller } from './../puller';
+import { clean } from './../puller/cleaner';
 
 const findRepositoryByName = (name, db) =>
   new Promise((resolve, reject) => {
@@ -92,5 +93,7 @@ export default pubsub => ({
       findRepositoryByName(name, db).then(repo =>
         puller.actualize({ repository: repo })
       ),
+    operationHistoryClean: (parent, { num, type }, { db }) =>
+      clean({ num, type }),
   },
 });

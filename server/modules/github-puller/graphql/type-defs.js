@@ -39,6 +39,7 @@ const schema = `
     rebuildRepository(name: String): Boolean!
     watchRepository(name: String): Boolean!
     stopWatchRepository(name: String): Boolean!
+    operationHistoryClean(num: Int = 1, type: String = minutes): Int
   }
 `;
 // type Subscription{

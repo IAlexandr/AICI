@@ -32,21 +32,21 @@ const newRepoDocs = [
   //     remoteCommit: { oid: null },
   //   },
   // },
-  {
-    name: 'deql-ms-system',
-    owner: 'IAlexandr',
-    branch: 'master',
-    sync: true,
-    pullWithUncommittedChanges: true,
-    localCommit: {
-      oid: null,
-    },
-    state: {
-      isBusy: false,
-      status: 'none',
-      remoteCommit: { oid: null },
-    },
-  },
+  // {
+  //   name: 'deql-ms-system',
+  //   owner: 'IAlexandr',
+  //   branch: 'master',
+  //   sync: true,
+  //   pullWithUncommittedChanges: true,
+  //   localCommit: {
+  //     oid: null,
+  //   },
+  //   state: {
+  //     isBusy: false,
+  //     status: 'none',
+  //     remoteCommit: { oid: null },
+  //   },
+  // },
 ];
 // TODO все переделать
 function seed(db, collection, newDocs, resolve, reject) {
