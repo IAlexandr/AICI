@@ -88,6 +88,7 @@ export default {
   dbseed: db =>
     new Promise(async (resolve, reject) => {
       if (options.config.nedb.force) {
+        debug('nedb force: true, will remove all documents.');
         const removePromises = Object.keys(collections).map(collection =>
           remove(collection, db)
         );
