@@ -8,7 +8,13 @@ export default {
   redis: {
     host: '10.157.1.12',
     port: 32768,
-    // password: 'redispass'
+    password: 'redispass',
+  },
+  nedb: {
+    cleaner: {
+      num: 2,
+      type: 'days',
+    },
   },
   sequelize: {
     options: {
@@ -35,5 +41,5 @@ export default {
     },
   },
   NODE_ENV: 'development',
-  githubApiToken: '771858e7e0363dc6bd82468fb15c2b3ffdcc4c51',
+  githubApiToken: '',
 };
