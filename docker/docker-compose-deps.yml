@@ -1,13 +1,13 @@
 version: '3.5'
 networks:
-  deql-gis-mapcam:
-    name: deql-gis-mapcam
+  deql-ms:
+    name: deql-ms
     driver: bridge
 services:
 ################################
-  deql-gis-postgis:
+  deql-ms-postgis:
     image: "mdillon/postgis"
-    container_name: deql-gis-postgis
+    container_name: deql-ms-postgis
     restart: always
     environment:
       POSTGRES_USER: mspostgis
@@ -23,11 +23,11 @@ services:
     ports:
      - "5445:5432"
     networks:
-      - deql-gis-mapcam
+      - deql-ms
 ################################
-  deql-gis-pgadmin:
+  deql-ms-pgadmin:
     image: "dpage/pgadmin4"
-    container_name: pgadmin
+    container_name: deql-ms-pgadmin
     restart: always
     environment:
       PGADMIN_DEFAULT_EMAIL: "admin"
@@ -40,11 +40,11 @@ services:
     ports:
      - "6543:80"
     networks:
-      - deql-gis-mapcam
+      - deql-ms
 ################################
-  deql-gis-redis:
+  deql-ms-redis:
     image: "geoworks/redis"
-    container_name: deql-gis-redis
+    container_name: deql-ms-redis
     restart: always
     logging:
       options:
@@ -54,5 +54,5 @@ services:
     ports:
      - "32768:6379"
     networks:
-      - deql-gis-mapcam
+      - deql-ms
 ################################
