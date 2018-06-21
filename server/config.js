@@ -11,6 +11,7 @@ export default {
     password: 'redispass',
   },
   nedb: {
+    force: true,
     cleaner: {
       num: 2,
       type: 'days',
@@ -41,5 +42,5 @@ export default {
     },
   },
   NODE_ENV: 'development',
-  githubApiToken: '',
+  githubApiToken: 'a1aeee6d26e4851382510601bc19f7bfaef886d2',
 };

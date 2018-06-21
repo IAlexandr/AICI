@@ -15,6 +15,9 @@ services:
       POSTGRES_DB: mapcam
     volumes:
     - /opt/postgres:/var/lib/postgresql/data
+    logging:
+      options:
+        max-size: 50m
     labels:
       org.label-schema.group: "ms-deps"
     ports:
@@ -29,6 +32,9 @@ services:
     environment:
       PGADMIN_DEFAULT_EMAIL: "admin"
       PGADMIN_DEFAULT_PASSWORD: "1234"
+    logging:
+      options:
+        max-size: 50m
     labels:
       org.label-schema.group: "ms-deps"
     ports:
@@ -40,6 +46,9 @@ services:
     image: "geoworks/redis"
     container_name: deql-gis-redis
     restart: always
+    logging:
+      options:
+        max-size: 50m
     labels:
       org.label-schema.group: "ms-deps"
     ports:
