@@ -46,7 +46,7 @@ export default pubsub => ({
   Mutation: {
     addRepository: (
       parent,
-      { repository, sync, pullWithUncommittedChanges },
+      { repository, sync, pullWithUncommittedChanges, usingTests },
       { db }
     ) =>
       new Promise((resolve, reject) => {
@@ -58,6 +58,7 @@ export default pubsub => ({
             },
             sync,
             pullWithUncommittedChanges,
+            usingTests,
             state: {
               isBusy: false,
               status: 'none',

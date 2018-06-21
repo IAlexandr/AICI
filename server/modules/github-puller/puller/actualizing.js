@@ -57,7 +57,9 @@ export default ({ repository, firstSync = false }) =>
       if (readyForPull) {
         const { isUpToDate } = await gitPull(repo);
         if (!isUpToDate) {
-          await testingContainer(repo);
+          if (repo.usingTests) {
+            await testingContainer(repo);
+          }
           await deployContainer(repository);
           debug('actualized.');
         }
