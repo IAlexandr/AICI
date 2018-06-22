@@ -13,6 +13,7 @@ const schema = `
     branch: String
     localCommit: CommitInfo
     sync: Boolean,
+    hasSubmodules: Boolean,
     pullWithUncommittedChanges: Boolean,
     usingTests: Boolean,
     state: RepositoryState
@@ -35,7 +36,7 @@ const schema = `
     remoteCommit: CommitInfo
   }
   type Mutation{
-    addRepository(repository: RepositoryInput, sync: Boolean = true, pullWithUncommittedChanges: Boolean = true, usingTests: Boolean = false): Repository!
+    addRepository(repository: RepositoryInput, sync: Boolean = true, hasSubmodules: Boolean = false, pullWithUncommittedChanges: Boolean = true, usingTests: Boolean = false): Repository!
     removeRepository(name: String): Int
     rebuildRepository(name: String): Boolean!
     watchRepository(name: String): Boolean!

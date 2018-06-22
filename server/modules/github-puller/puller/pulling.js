@@ -65,11 +65,12 @@ export const gitPull = repository =>
       message: 'github pulling..\'',
       isBusy: true,
     });
+    let commands = [`git pull origin ${repo.branch}`];
+    if (repo.hasSubmodules) {
+      commands = commands.concat(['git submodule update --recursive']);
+    }
     const { stdout, stderr } = await exec({
-      commands: [
-        `git pull origin ${repo.branch}`,
-        'git pull --recurse-submodules',
-      ],
+      commands,
       options: { cwd: repFolderPath },
       operation: { name: 'git pull' },
       repository,

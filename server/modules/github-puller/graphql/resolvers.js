@@ -46,7 +46,13 @@ export default pubsub => ({
   Mutation: {
     addRepository: (
       parent,
-      { repository, sync, pullWithUncommittedChanges, usingTests },
+      {
+        repository,
+        sync,
+        hasSubmodules,
+        pullWithUncommittedChanges,
+        usingTests,
+      },
       { db }
     ) =>
       new Promise((resolve, reject) => {
@@ -57,6 +63,7 @@ export default pubsub => ({
               oid: null,
             },
             sync,
+            hasSubmodules,
             pullWithUncommittedChanges,
             usingTests,
             state: {
