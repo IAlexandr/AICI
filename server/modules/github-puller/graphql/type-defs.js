@@ -38,7 +38,7 @@ const schema = `
   type Mutation{
     addRepository(repository: RepositoryInput, sync: Boolean = true, hasSubmodules: Boolean = false, pullWithUncommittedChanges: Boolean = true, usingTests: Boolean = false): Repository!
     removeRepository(name: String): Int
-    rebuildRepository(name: String): Boolean!
+    rebuildRepository(name: String): Boolean
     watchRepository(name: String): Boolean!
     stopWatchRepository(name: String): Boolean!
     operationHistoryClean(num: Int = 1, type: String = minutes): Int

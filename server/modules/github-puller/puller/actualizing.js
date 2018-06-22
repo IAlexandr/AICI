@@ -21,7 +21,7 @@ export default ({ repository, firstSync = false }) =>
       let repo = await getRepository(repository);
       if (repo.state.isBusy) {
         debug(`[actualizing] repository "${repository.name}" is busy.`);
-        return resolve();
+        return resolve(true);
       }
       if (
         repo.state.remoteCommit.oid === remoteCommit.oid &&
@@ -29,7 +29,7 @@ export default ({ repository, firstSync = false }) =>
       ) {
         // проверка уже выполнена
         debug('nothing to rebuild.');
-        return resolve();
+        return resolve(true);
       }
       await changeState(repo, { remoteCommit });
 
@@ -62,6 +62,7 @@ export default ({ repository, firstSync = false }) =>
           }
           await deployContainer(repository);
           debug('actualized.');
+          return resolve(true);
         }
       }
     } catch (err) {
@@ -75,6 +76,6 @@ export default ({ repository, firstSync = false }) =>
         debug('change state err', e.message);
       }
       debug('actualizing err', err.message);
-      return resolve();
+      return resolve(true);
     }
   });
