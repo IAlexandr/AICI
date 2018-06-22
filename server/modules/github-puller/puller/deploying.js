@@ -36,8 +36,10 @@ export const deployContainer = repository =>
         message: 'up',
         isBusy: false,
       });
+      delete require.cache[path.resolve(repFolderPath, 'package.json')];
       return resolve();
     } else {
+      delete require.cache[path.resolve(repFolderPath, 'package.json')];
       return reject(
         new Error(
           `repository '${

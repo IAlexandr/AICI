@@ -31,8 +31,10 @@ export const testingContainer = repository =>
         repository,
       });
       debug('build_testing_container result stdout:', stdout);
+      delete require.cache[path.resolve(repFolderPath, 'package.json')];
       return resolve();
     } else {
+      delete require.cache[path.resolve(repFolderPath, 'package.json')];
       return reject(
         new Error(
           `repository '${

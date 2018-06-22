@@ -55,9 +55,6 @@ export const gitPull = repository =>
   new Promise(async (resolve, reject) => {
     let repo = await getRepository(repository);
     const repFolderPath = getRepFolderPath(repo);
-    const repoScripts = require(path.resolve(repFolderPath, 'package.json'));
-    if (repoScripts.scripts.hasOwnProperty('git-pull-submodules')) {
-    }
 
     debug('gitPull', repo.name);
     await changeState(repo, {
