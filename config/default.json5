@@ -47,6 +47,7 @@
     accessSyncForce: true
   },
   buildType: "prod", // dev, prod
+  playgroundEnable: true,
   NODE_ENV: "development", // development, production
   promMonitoringHash: "001dc9bdb52d04dc20036dbd8313ed",
   githubApiToken: ""
