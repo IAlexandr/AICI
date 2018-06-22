@@ -1,4 +1,6 @@
-## SIMPLE DEPLOY
+# CI/CD
+
+watching repository => pulling changes => testing inside docker container => deploy docker container
 
 # TODO
 
@@ -61,7 +63,7 @@ input file name ~/.ssh/id*rsa*< repository name >
 
 open https://github.com/< username >/< repository name >/settings/keys
 
-click on "Add deploy key" and paste result of "cat ~/.ssh/id*rsa*< repository name >.pub"
+click on "Add deploy key" and paste result of "cat ~/.ssh/id_rsa\_< repository name >.pub"
 
 then go to the server console:
 
@@ -79,6 +81,9 @@ now you can clone repository:
 `git clone < repository name >:< github owner name >/< repository name >`
 
 for example: `git clone AICI:IAlexandr/AICI`
+
+!!! you need actualize /root/.ssh/config, every changes you should update root ssh config.
+(`cp -r /home/< username >/.ssh/ /root/.ssh`)
 
 ## repository with submodules
 
@@ -102,3 +107,12 @@ for example:
 use this if you already init with other url
 
 `git submodule deinit server/deql-ms-server`
+
+## add to rc.local for auto starting (or you can use pm2)
+
+- `sudo nano /etc/rc.local`
+
+```
+cd /home/< username >/some-app
+sudo npm run server
+```
