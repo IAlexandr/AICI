@@ -48,7 +48,6 @@ export const getRepFolderPath = repository =>
 export const readLocalCommit = repository =>
   new Promise(async (resolve, reject) => {
     const repFolderPath = getRepFolderPath(repository);
-    debug('repFolderPath', repFolderPath);
     const { stdout, stderr } = await exec({
       commands: ['git log -1'],
       options: { cwd: repFolderPath },
