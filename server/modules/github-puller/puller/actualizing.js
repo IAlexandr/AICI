@@ -20,7 +20,6 @@ export default ({ repository, firstSync = false }) =>
       const { remoteCommit, changed } = await getRemoteCommit(repository);
       let repo = await getRepository(repository);
       if (repo.state.isBusy) {
-        debug(`[actualizing] repository "${repository.name}" is busy.`);
         return resolve(true);
       }
       if (
@@ -28,7 +27,6 @@ export default ({ repository, firstSync = false }) =>
         ['exec err', 'err', 'ok'].indexOf(repo.state.status) !== -1
       ) {
         // проверка уже выполнена
-        debug('nothing to rebuild.');
         return resolve(true);
       }
       await changeState(repo, { remoteCommit });
