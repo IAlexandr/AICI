@@ -96,12 +96,15 @@ export default pubsub => ({
       }),
     removeRepository: (parent, { name }, { db }) =>
       new Promise((resolve, reject) => {
-        db.Repository.remove({ name }, {}, (err, removed) => {
-          if (err) {
-            return reject(err);
-          }
-          console.log('removed', removed);
-          return resolve(removed);
+        findRepositoryByName(name, db).then(repo => {
+          puller.stopRepoWatch(repo);
+          db.Repository.remove({ name }, {}, (err, removed) => {
+            if (err) {
+              return reject(err);
+            }
+            console.log('removed', removed);
+            return resolve(removed);
+          });
         });
       }),
     watchRepository: (parent, { name }, { db }) =>
