@@ -115,7 +115,7 @@ export default pubsub => ({
       ),
     rebuildRepository: (parent, { name }, { db }) =>
       findRepositoryByName(name, db).then(repo =>
-        puller.actualize({ repository: repo })
+        puller.actualize({ repository: repo, rebuild: true })
       ),
     operationHistoryClean: (parent, { num, type }, { db }) =>
       clean({ num, type }),
