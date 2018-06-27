@@ -53,6 +53,7 @@ export const readLocalCommit = repository =>
       options: { cwd: repFolderPath },
       operation: { name: 'git read last commit' },
       repository,
+      withoutLog: true,
     });
     const re = new RegExp('(commit)(.*?)(?=\\n)', 'g');
     let commitOid = stdout.match(re);

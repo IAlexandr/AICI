@@ -6,6 +6,15 @@ const schema = `
     repository(name: String): Repository
     readLocalCommit(name: String): String!
     watchingRepositories: [String]
+    operations: [Operation]
+  }
+  type Operation{
+    name: String
+    repoName: String
+    stdout: String
+    stderr: String
+    err: String,
+    createdAt: String,
   }
   type Repository{
     name: String

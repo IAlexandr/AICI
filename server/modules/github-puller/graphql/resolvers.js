@@ -35,6 +35,19 @@ export default pubsub => ({
       findRepositoryByName(name, db).then(puller.readLocalCommit),
     watchingRepositories: (parent, {}, { db }) =>
       puller.watchingRepositories(),
+    operations: (operations, args, { db }) => {
+      return new Promise((resolve, reject) => {
+        db.Operation.find({}, { multi: true })
+          .sort({ createdAt: -1 })
+          .limit(10)
+          .exec((err, docs) => {
+            if (err) {
+              return reject(err);
+            }
+            return resolve(docs);
+          });
+      });
+    },
   },
   // Subscription: {
   //   fileAdded: {

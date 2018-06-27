@@ -6,17 +6,26 @@ const { debug } = logger('project.modules.github-puller.utils');
 
 export const exec = props =>
   new Promise((resolve, reject) => {
-    const { commands, options, operation, repository } = props;
+    const {
+      commands,
+      options,
+      operation,
+      repository,
+      withoutLog = false,
+    } = props;
     const { name } = operation;
     series(commands, options, async (err, stdout, stderr) => {
-      createOperation({
-        name,
-        repoName: repository.name,
-        stdout,
-        stderr,
-        err,
-        createdAt: new Date(),
-      });
+      if (!withoutLog) {
+        createOperation({
+          name,
+          repoName: repository.name,
+          stdout,
+          stderr,
+          err,
+          createdAt: new Date(),
+        });
+      }
+
       if (err) {
         debug('repository:', repository.name, 'err', err);
         debug('repository:', repository.name, 'stderr', stderr);
